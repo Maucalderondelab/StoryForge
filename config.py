@@ -1,7 +1,7 @@
 
 import os
 from dotenv import load_dotenv
-from typing import TypeDict, List, Dict, Optional, Literal
+from typing import TypedDict, List, Dict, Optional, Literal
 from typing_extensions import NotRequired
 
 load_dotenv()
@@ -20,7 +20,7 @@ LANGSMITH_PROJECT = "StoryForge"
 
 
 # Create the state class fr the app and agent integration
-class StoryState(TypeDict):
+class StoryState(TypedDict):
     # UI inputs
 
     prompt: str
@@ -36,13 +36,23 @@ class StoryState(TypeDict):
     ]
     style: str
 
-
     # Processing Variables
-    needs_search: NotRequired[bool]
-    search_results: NotRequired[Dict]
-    iterations: NotRequired[int]
-
+    iterations: Optional[int]
+    sample_stories: Optional[Dict]
+    
+    # Research variables
+    questions: Optional[List[str]]
+    research_results: Optional[List[Dict]]
+    research_history: Optional[Dict]
+    
+    # Story building variables
+    chapters: Optional[List[Dict[str, str]]]
+    
+    # Evaluation variables
+    evaluation: Optional[Dict]
+    
     # Outputs
-    title: NotRequired[str]
-    story: NotRequired[str]
-    chapters: NotRequired[List[Dict[str, str]]]
+    title: Optional[str]
+    story: Optional[str]
+    final_title: Optional[str]
+    final_story: Optional[str]

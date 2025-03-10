@@ -1,0 +1,125 @@
+{
+  "Moral & Reflection": {
+    "title": "The Garden of Choices",
+    "story": "In a small village nestled between rolling hills, there lived a gardener named Elara...",
+    "chapters": [
+      {
+        "time": "00:00",
+        "title": "Introduction",
+        "description": "The village and Elara's garden"
+      },
+      {
+        "time": "01:30",
+        "title": "Thorne's Dilemma",
+        "description": "The young man at a crossroads"
+      },
+      {
+        "time": "03:15",
+        "title": "The Two Seeds",
+        "description": "Elara's gardening lesson begins"
+      },
+      {
+        "time": "05:00",
+        "title": "The Results",
+        "description": "What happened to each plant"
+      },
+      {
+        "time": "06:45",
+        "title": "The Lesson",
+        "description": "The meaning behind the experiment"
+      },
+      {
+        "time": "08:15",
+        "title": "Resolution",
+        "description": "Thorne's newfound understanding"
+      }
+    ]
+  },
+  "Historical": {
+    "title": "The Silent Librarian of Alexandria",
+    "story": "As flames licked the sky above the great Library of Alexandria in 48 BCE, Amara...",
+    "chapters": [
+      {
+        "time": "00:00",
+        "title": "Alexandria in Flames",
+        "description": "The historical setting of 48 BCE"
+      },
+      {
+        "time": "02:00",
+        "title": "Amara's Mission",
+        "description": "The apprentice's determination"
+      },
+      {
+        "time": "04:15",
+        "title": "The Great Library",
+        "description": "Description of the world's knowledge center"
+      },
+      {
+        "time": "06:30",
+        "title": "The Secret Vault",
+        "description": "Reaching the most precious documents"
+      },
+      {
+        "time": "09:00",
+        "title": "Difficult Choices",
+        "description": "Deciding what knowledge to save"
+      },
+      {
+        "time": "11:45",
+        "title": "Escape",
+        "description": "Fleeing the collapsing building"
+      },
+      {
+        "time": "13:30",
+        "title": "Legacy",
+        "description": "How the rescued knowledge lived on"
+      }
+    ]
+  },
+  "Terror": {
+    "title": "The Whispering House",
+    "story": "The house on Blackwood Hill had been vacant for twenty years before Maya decided to purchase it...",
+    "chapters": [
+      {
+        "time": "00:00",
+        "title": "The House on Blackwood Hill",
+        "description": "Introduction to the setting"
+      },
+      {
+        "time": "01:45",
+        "title": "First Nights",
+        "description": "Maya begins to hear whispers"
+      },
+      {
+        "time": "03:30",
+        "title": "Strange Writing",
+        "description": "Unexplained text appears in her work"
+      },
+      {
+        "time": "05:15",
+        "title": "The Hidden Journal",
+        "description": "Discovery of the previous owner's writings"
+      },
+      {
+        "time": "07:00",
+        "title": "Voices in the Walls",
+        "description": "The whispers intensify"
+      },
+      {
+        "time": "09:30",
+        "title": "Something Moving",
+        "description": "Maya sees something inside the walls"
+      },
+      {
+        "time": "11:15",
+        "title": "The Bargain",
+        "description": "Maya begins writing for the voices"
+      },
+      {
+        "time": "13:45",
+        "title": "Dawn Realization",
+        "description": "The terrible truth about the house"
+      }
+    ]
+  }
+}

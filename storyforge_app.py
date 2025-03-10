@@ -5,112 +5,20 @@ import random
 from pathlib import Path
 import base64
 import io
+import json
 from PIL import Image as PILImage
 
 # Import and create the workflow
 from agents.storyteller import create_workflow
 
 # Define the state type
-from typing import TypedDict, Optional
+from typing import TypedDict, Optional, Dict, List, Any
 from IPython.display import Image, display
 from langchain_core.runnables.graph import CurveStyle, MermaidDrawMethod, NodeStyles
 
 # Mock story data (replace with your LangGraph agent later)
-SAMPLE_STORIES = {
-"Moral & Reflection": {
-        "title": "The Garden of Choices",
-        "story": """In a small village nestled between rolling hills, there lived a gardener named Elara. Her garden was the most beautiful in the region, filled with flowers that seemed to dance with the wind and vegetables that tasted like they were kissed by the sun.
-
-Many would visit Elara's garden to seek her wisdom, for it was said that she could provide guidance through the simple act of gardening. One day, a troubled young man named Thorne came to her garden.
-
-"I stand at a crossroads," Thorne confessed, "and every path seems to lead to disappointment."
-
-Elara smiled gently and handed him two seed packets. "Plant these in separate pots," she instructed. "Tend to the first with daily care—water, sunlight, and attention. Leave the second to fend for itself."
-
-Weeks passed, and Thorne returned. The first pot displayed a vibrant, blooming flower, while the second contained only dry soil and a wilted sprout.
-
-"Our lives are like these plants," Elara explained. "The paths we nurture with patience, dedication, and care will flourish. Those we neglect wither away. The choice isn't about which path to take, but which one deserves your devotion."
-
-Thorne looked at the thriving plant, understanding dawning on his face. "So the disappointment comes not from the path itself, but from how I walk it."
-
-Elara nodded. "The garden of life requires tending. Choose the seeds you plant carefully, but remember—your consistent care matters more than the initial choice."
-
-Thorne left that day with both pots and a newfound clarity. The crossroads hadn't disappeared, but now he understood that whichever path he chose would be shaped by his commitment to it.""",
-        "chapters": [
-            {"time": "00:00", "title": "Introduction", "description": "The village and Elara's garden"},
-            {"time": "01:30", "title": "Thorne's Dilemma", "description": "The young man at a crossroads"},
-            {"time": "03:15", "title": "The Two Seeds", "description": "Elara's gardening lesson begins"},
-            {"time": "05:00", "title": "The Results", "description": "What happened to each plant"},
-            {"time": "06:45", "title": "The Lesson", "description": "The meaning behind the experiment"},
-            {"time": "08:15", "title": "Resolution", "description": "Thorne's newfound understanding"}
-        ]
-    },
-    "Historical": {
-        "title": "The Silent Librarian of Alexandria",
-        "story": """As flames licked the sky above the great Library of Alexandria in 48 BCE, Amara, a young Librarian's apprentice, moved with purpose through the smoke-filled halls. While Roman soldiers clashed with Egyptian forces outside, she had only one mission: to save as much knowledge as possible.
-
-The Library housed over half a million scrolls—the greatest collection of knowledge in the ancient world. Philosophers, mathematicians, astronomers, and poets from across the Mediterranean had contributed to this temple of wisdom. And now it was burning.
-
-Amara had studied under the great scholar Didymus for five years. "Knowledge preserved is a torch passed through generations," he had taught her. Tonight, those words drove her deeper into the burning building.
-
-She knew the hidden vault beneath the main reading room—a secret chamber where the most precious documents were kept. The Astronomical treatises of Aristarchus suggesting Earth revolved around the sun. The anatomical studies of Herophilus. Mathematical works from Euclid and Archimedes. Maps charting lands beyond the known world.
-
-Coughing through the thickening smoke, Amara reached the vault. The heat was becoming unbearable, but she methodically filled her leather satchels with the most irreplaceable scrolls. She couldn't save everything—choices had to be made about which knowledge would survive.
-
-As the ceiling began to collapse, Amara escaped through a servant's passage carrying three heavy bags. She looked back once at the glowing building that had been her home and sanctuary.
-
-History would remember the burning of the Library as an incalculable loss for humanity—thousands of scrolls and books destroyed, centuries of knowledge turned to ash. Few would know of Amara and the network of scholars who saved hundreds of texts, copying and distributing them throughout the ancient world.
-
-The works she rescued that night would eventually find their way to Baghdad, Constantinople, and Damascus, preserving crucial knowledge that would otherwise have been lost forever. Amara herself would establish a small but significant library in Upper Egypt, becoming a silent guardian of the flame of knowledge that nearly went out on that terrible night in Alexandria.""",
-        "chapters": [
-            {"time": "00:00", "title": "Alexandria in Flames", "description": "The historical setting of 48 BCE"},
-            {"time": "02:00", "title": "Amara's Mission", "description": "The apprentice's determination"},
-            {"time": "04:15", "title": "The Great Library", "description": "Description of the world's knowledge center"},
-            {"time": "06:30", "title": "The Secret Vault", "description": "Reaching the most precious documents"},
-            {"time": "09:00", "title": "Difficult Choices", "description": "Deciding what knowledge to save"},
-            {"time": "11:45", "title": "Escape", "description": "Fleeing the collapsing building"},
-            {"time": "13:30", "title": "Legacy", "description": "How the rescued knowledge lived on"}
-        ]
-    },
-    "Terror": {
-        "title": "The Whispering House",
-        "story": """The house on Blackwood Hill had been vacant for twenty years before Maya decided to purchase it. "It's just old," the real estate agent assured her when she noticed the goosebumps on her arms during the viewing. "These hillside homes creak a bit, that's all."
-
-Maya loved the isolation and the view of the small town below. As a writer seeking quiet, it seemed perfect despite the rumors from locals about the previous owners' sudden, unexplained departure.
-
-The first night, Maya convinced herself the whispers were just wind threading through the old walls. By the third night, she could almost distinguish words in the gentle, persistent murmuring that seemed to follow her from room to room.
-
-"Just settling sounds," she told herself, setting up her writing desk by the bay window of the master bedroom. The words flowed easily here—too easily, sometimes appearing on her screen when she was certain she hadn't typed them.
-
-One morning, Maya found a journal hidden behind a loose baseboard. The handwriting inside matched the strange sentences that had been appearing in her manuscript:
-
-"They're in the walls now. They whisper their stories and beg me to write them. They need to be remembered. They need to be released."
-
-The entries grew more frantic with each page until they stopped abruptly mid-sentence. That night, the whispers grew louder, and Maya realized they were coming from inside the walls—dozens of voices, overlapping, pleading.
-
-When she pressed her ear against the faded wallpaper, it felt warm, almost like skin. Through a crack, she glimpsed something moving within the wall—not mice or insects, but something flowing, like ink forming words.
-
-That night, Maya couldn't sleep. Her computer turned on by itself, cursor blinking expectantly. The whispers had become a chorus, impossible to ignore. "Write for us," they seemed to say. "Give us voice. Make us real again."
-
-Exhausted, Maya sat at her desk and began to type. The words weren't hers, but they flowed through her fingers. With each paragraph, the whispers grew more satisfied, and the walls of the house seemed to pulse with anticipation.
-
-By dawn, Maya had completed an entire manuscript—stories of lives cut short, of secrets buried, of things that happened in this house on Blackwood Hill over generations. As she typed the final period, the whispers finally ceased.
-
-In the sudden silence, Maya heard a new sound—the gentle shifting of the walls around her, closing in inch by inch. She realized too late what the previous owner had discovered: the house didn't want a caretaker.
-
-It wanted an author.""",
-        "chapters": [
-            {"time": "00:00", "title": "The House on Blackwood Hill", "description": "Introduction to the setting"},
-            {"time": "01:45", "title": "First Nights", "description": "Maya begins to hear whispers"},
-            {"time": "03:30", "title": "Strange Writing", "description": "Unexplained text appears in her work"},
-            {"time": "05:15", "title": "The Hidden Journal", "description": "Discovery of the previous owner's writings"},
-            {"time": "07:00", "title": "Voices in the Walls", "description": "The whispers intensify"},
-            {"time": "09:30", "title": "Something Moving", "description": "Maya sees something inside the walls"},
-            {"time": "11:15", "title": "The Bargain", "description": "Maya begins writing for the voices"},
-            {"time": "13:45", "title": "Dawn Realization", "description": "The terrible truth about the house"}
-        ]
-    }
-}
+with open("SAMPLE_STORIES.json", "r") as f:
+    SAMPLE_STORIES = json.load(f)
 
 # Mock functions to simulate your LangGraph agent
 def generate_story(prompt, story_type, length, style):
@@ -345,10 +253,12 @@ with gr.Blocks(theme=gr.themes.Soft(primary_hue="gray")) as demo:
                 "length": length,
                 "style": style,
                 "title": "",  # Will be filled during generation
-                "story": ""   # Will be filled during generation
+                "story": "",  # Will be filled during generation
+                "iterations": 0,  # Add iteration tracking for our agents
+                "sample_stories": SAMPLE_STORIES  # Add sample stories for fallback
             }
             
-            
+            # Define the state type - this should match the config.py StoryState
             class StoryState(TypedDict):
                 prompt: str
                 story_type: str
@@ -356,23 +266,32 @@ with gr.Blocks(theme=gr.themes.Soft(primary_hue="gray")) as demo:
                 style: str
                 title: Optional[str]
                 story: Optional[str]
-
-            print("Tried just before the workflow generation")
+                iterations: Optional[int]
+                sample_stories: Optional[Dict]
+            
+            print("🟩 Initial state:", initial_state)
+            print("🟩 Creating workflow for story generation...")
+            
             # Create and execute the workflow
             workflow = create_workflow(StoryState)
+            print(f"🟩 Invoking workflow with prompt: {prompt[:300]}...")
             final_state = workflow.invoke(initial_state)
             
             # Return results
             return final_state.get("title", "Untitled"), final_state.get("story", "")
 
         except Exception as e:
-            
             # Log the error
-            print(f"Error generating story: {e}")
+            print(f"🟥​Error generating story: {e}")
+            import traceback
+            traceback.print_exc()
+            
             # Fallback to sample stories
             story_data = SAMPLE_STORIES.get(story_type, SAMPLE_STORIES["Moral & Reflection"])
             return story_data["title"], story_data["story"]
-    # Create a separate function for visualization
+    # 2. Update the show_workflow function to ensure it captures the full workflow including our new branches
+    # This updates the visualization part
+    
     def show_workflow():
         """
         Generates and displays the workflow diagram using Mermaid.Ink
@@ -383,7 +302,6 @@ with gr.Blocks(theme=gr.themes.Soft(primary_hue="gray")) as demo:
         diagram_path = "workflow_diagram.png"
         
         try:
-            
             # Define the state type
             class StoryState(TypedDict):
                 prompt: str
@@ -392,13 +310,13 @@ with gr.Blocks(theme=gr.themes.Soft(primary_hue="gray")) as demo:
                 style: str
                 title: Optional[str]
                 story: Optional[str]
+                iterations: Optional[int]  # Add this for our historical branch
             
             # Create the workflow (without invoking it)
             from agents.storyteller import create_workflow
             workflow = create_workflow(StoryState)
             
-                        
-    # Get the Mermaid diagram data
+            # Get the Mermaid diagram data
             mermaid_graph = workflow.get_graph().draw_mermaid_png(
                 draw_method=MermaidDrawMethod.API
             )
@@ -436,7 +354,7 @@ with gr.Blocks(theme=gr.themes.Soft(primary_hue="gray")) as demo:
             import traceback
             traceback.print_exc()
             return None
-
+    
 
 
     # Connect the button click to the handler function
