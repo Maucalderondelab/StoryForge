@@ -1,0 +1,36 @@
+[project]
+name = "podcast_llama"
+version = "0.1.0"
+description = "Text-to-speech by Zyphra"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "jupyterlab",
+  "catppuccin-jupyterlab",
+  "typing",
+  "langgraph",
+  "langchain_core",
+  "langchain_openai",
+  "nest_asyncio",
+  "dotenv",
+
+]
+
+# Note: Not actually optional. All the modeling code lives in mamba-ssm.
+# We put them here to make the two-stage installation process easier.
+# [project.optional-dependencies]
+# compile = [
+    # "flash-attn>=2.7.3",
+    # "mamba-ssm>=2.2.4",
+    # "causal-conv1d>=1.5.0.post8",
+# ]
+
+# [tool.setuptools.packages.find]
+# include = ["zonos", "csm"]
+
+# [tool.uv]
+# no-build-isolation-package = ["flash-attn", "mamba-ssm", "causal-conv1d"]
+
+[tool.ruff]
+line-length = 120
+
