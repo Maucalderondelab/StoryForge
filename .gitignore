@@ -1,0 +1,33 @@
+  
+# igonre all .* files except .gitignore
+.*
+!.gitignore
+
+# Python byproducts
+__init__.py
+__pycache__/
+
+.env
+
+python-version
+
+/storyforge
+
+/Esopo
+
+/generated_images
+
+.venv 
+# Safe to ignore
+dist/
+__pycache__/
+node_modules/
+npm-debug.log
+report.*.json
+
+*.parquet
+*.map
+*.zip
+*.gz
+*.tar
+*.tgz

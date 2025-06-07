@@ -1,0 +1,21 @@
+[project]
+name = "storyforge"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "grandalf>=0.8",
+    "langchain-community>=0.3.23",
+    "langchain-core>=0.3.59",
+    "langchain-openai>=0.3.16",
+    "langgraph>=0.4.3",
+    "langgraph-checkpoint>=2.0.25",
+    "langsmith>=0.3.42",
+    "notebook>=7.4.2",
+    #"pyppeteer>=2.0.0",
+    "python-dotenv>=1.1.0",
+    "streamlit>=1.45.0", # Use latest version
+    "google-genai>=1.18.0",
+    "colorama>=0.4.6",
+]
