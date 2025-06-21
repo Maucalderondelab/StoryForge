@@ -12,7 +12,7 @@ from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_core.runnables.graph import CurveStyle, MermaidDrawMethod, NodeStyles
 
 # prompts import
-from app.prompts.prompts import MAIN_AGENT_PROMPT, ANALYZE_FABLE_PROMPT, BRAINSTORM_STORY_PROMPT, GENERATE_STORY_AESOP_PROMPT, FORMAT_OUTPUT_PROMPT, IMAGE_PROMPT_GENERATOR_PROMPT
+from app.prompts.prompts import ANALYZE_FABLE_PROMPT, BRAINSTORM_STORY_PROMPT, GENERATE_STORY_AESOP_PROMPT
 
 # import metadata tracker
 from metadata_tracker.metadata_tracker import track_node, track_llm_call, metadata
@@ -76,11 +76,21 @@ def brainstorm_story(state: AesopState) -> Dict[str, Any]:
     
     logger.info(f"Brainstorming based on analysis of moral: {analysis.get('moral', '')[:50]}...")
     
+    system_prompt = BRAINSTORM_STORY_PROMPT
+    user_prompt = f"Original fable: {original_fable}\n\nAnalysis: {json.dumps(analysis, indent=2)}"
     response = openai_41_mini_client.invoke([
-        SystemMessage(content=BRAINSTORM_STORY_PROMPT),
-        HumanMessage(content=f"Original fable: {original_fable}\n\nAnalysis: {json.dumps(analysis, indent=2)}")
+        SystemMessage(content=system_prompt),
+        HumanMessage(content=user_prompt)
     ])
-    
+    # Track the LLM call
+    track_llm_call(
+        node_name="brainstorm_story",
+        tool_name="aesop_tool",
+        model="gpt-4.1-mini",
+        system_prompt=system_prompt,
+        user_prompt=user_prompt,
+        response_text=response.content
+    )
     try:
         brainstorm = json.loads(response.content)
     except:

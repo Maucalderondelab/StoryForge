@@ -17,10 +17,10 @@ from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_core.runnables.graph import CurveStyle, MermaidDrawMethod, NodeStyles
 
 # prompts import
-from app.prompts.prompts import MAIN_AGENT_PROMPT, ANALYZE_FABLE_PROMPT, BRAINSTORM_STORY_PROMPT, GENERATE_STORY_AESOP_PROMPT, FORMAT_OUTPUT_PROMPT, IMAGE_PROMPT_GENERATOR_PROMPT
+from app.prompts.prompts import FORMAT_OUTPUT_PROMPT, IMAGE_PROMPT_GENERATOR_PROMPT
 
 # metadata tracker import
-from metadata_tracker.metadata_tracker import track_node, track_llm_call, metadata
+from metadata_tracker.metadata_tracker import track_node, track_llm_call, track_image_generation, metadata
 
 logger = setup_logger()
 
@@ -106,7 +106,7 @@ def generate_output(state: MainState) -> Dict[str, Any]:
             logger.info(f"Original story word count: {original_word_count}")
             
             # Create a prompt to split and enhance the story with strict word counts
-            system_prompt = GENERATE_STORY_AESOP_PROMPT
+            system_prompt = FORMAT_OUTPUT_PROMPT
             
             user_prompt = f"""Story: {generated_story}
             
@@ -218,10 +218,10 @@ def image_prompt_generator(state: MainState) -> Dict[str, Any]:
     ])
     
     # Track LLM call
-    track_llm_call(
+    track_image_generation(
         node_name="image_prompt_generator",
         tool_name="main",
-        model="gpt-4.1-mini",
+        model="imagen-3.0-generate-002",
         system_prompt=system_prompt,
         user_prompt=user_prompt,
         response_text=response.content
@@ -286,18 +286,19 @@ def build_main_graph():
     builder.add_edge("main_agent", "tool_router")
     builder.add_edge("tool_router", "generate_output")
     
-    # Conditional edge after generate_output
-    builder.add_conditional_edges(
-        "generate_output",
-        decide_next_step,
-        {
-            "image_prompt_generator": "image_prompt_generator",
-            END: END
-        }
-    )
+    # # Conditional edge after generate_output
+    # builder.add_conditional_edges(
+    #     "generate_output",
+    #     decide_next_step,
+    #     {
+    #         "image_prompt_generator": "image_prompt_generator",
+    #         END: END
+    #     }
+    # )
     
-    # Final edge
-    builder.add_edge("image_prompt_generator", END)
+    # Final edgegenerate_output
+    builder.add_edge("generate_output", END)
+    # builder.add_edge("image_prompt_generator", END)
     
     # Compile
     graph = builder.compile()

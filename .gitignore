@@ -15,8 +15,7 @@ python-version
 
 /Esopo
 
-/generated_images
-
+/generated_stories
 .venv 
 # Safe to ignore
 dist/

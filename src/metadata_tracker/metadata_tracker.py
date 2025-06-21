@@ -3,6 +3,9 @@ import json
 import functools
 
 from datetime import datetime
+from pathlib import Path
+import os
+
 import tiktoken  # For token counting
 
 from config.logger import logger
@@ -77,25 +80,31 @@ def track_node(node_name, tool_name="main"):
         return wrapper
     return decorator
 
-def track_llm_call(node_name, tool_name, model, system_prompt, user_prompt, response_text):
+def track_llm_call(node_name, tool_name, model, system_prompt, user_prompt, response_text, cached_tokens=0):
     """Track an LLM API call"""
     story_id = metadata.get("current_story")
     if not story_id:
         return
     
-    # Simple token estimation (very rough)
-    input_tokens = (len(system_prompt) + len(user_prompt)) // 4  # ~4 chars per token
+    # Token estimation
+    input_tokens = (len(system_prompt) + len(user_prompt)) // 4
     output_tokens = len(response_text) // 4
     
-    # Cost estimation (very rough)
+    # Cost estimation with current pricing
     if model == "gpt-4.1-mini":
-        input_cost = (input_tokens / 1000) * 0.00040
-        output_cost = (output_tokens / 1000) * 0.0016
+        input_cost = (input_tokens / 1000) * 0.00015  # Current price
+        cached_cost = (cached_tokens / 1000) * 0.000075  # 50% discount
+        output_cost = (output_tokens / 1000) * 0.0006
+    elif model == "o1-mini":  # Fixed model name
+        input_cost = (input_tokens / 1000) * 0.003
+        cached_cost = (cached_tokens / 1000) * 0.0015
+        output_cost = (output_tokens / 1000) * 0.012
     else:
-        input_cost = (input_tokens / 1000) * 0.00010
-        output_cost = (output_tokens / 1000) * 0.00030
+        input_cost = (input_tokens / 1000) * 0.0001
+        cached_cost = 0
+        output_cost = (output_tokens / 1000) * 0.0003
     
-    total_cost = input_cost + output_cost
+    total_cost = input_cost + output_cost + cached_cost
     
     # Record the call
     call_data = {
@@ -104,8 +113,12 @@ def track_llm_call(node_name, tool_name, model, system_prompt, user_prompt, resp
         "tool": tool_name,
         "model": model,
         "input_tokens": input_tokens,
+        "cached_tokens": cached_tokens,
         "output_tokens": output_tokens,
         "total_tokens": input_tokens + output_tokens,
+        "input_cost": input_cost,
+        "cached_cost": cached_cost,
+        "output_cost": output_cost,
         "total_cost": total_cost
     }
     
@@ -124,38 +137,91 @@ def track_llm_call(node_name, tool_name, model, system_prompt, user_prompt, resp
     metadata["total_cost"] += total_cost
     
     logger.info(f"LLM call in {node_name}: {input_tokens + output_tokens} tokens, ${total_cost:.4f}")
-
+def track_image_generation(node_name, tool_name, model, prompt_text, num_images, image_specs=None):
+    """Track image generation API calls"""
+    story_id = metadata.get("current_story")
+    if not story_id:
+        return
+    
+    # Image generation costs
+    if model == "imagen-3.0-generate-002":
+        cost_per_image = 0.03  # Check current pricing
+    else:
+        cost_per_image = 0.02  # Fallback
+    
+    total_cost = num_images * cost_per_image
+    
+    # Record the call
+    call_data = {
+        "timestamp": time.time(),
+        "node": node_name,
+        "tool": tool_name,
+        "model": model,
+        "prompt_length": len(prompt_text),
+        "num_images": num_images,
+        "cost_per_image": cost_per_image,
+        "total_cost": total_cost,
+        "image_specs": image_specs or {}
+    }
+    
+    # Update story
+    story = metadata["stories"][story_id]
+    if "image_calls" not in story:
+        story["image_calls"] = []
+    story["image_calls"].append(call_data)
+    story["total_cost"] += total_cost
+    
+    logger.info(f"Image generation in {node_name}: {num_images} images, ${total_cost:.4f}")
 def finish_story(output_text):
-    """Finish tracking the current story"""
+    """Finish tracking the current story with enhanced metrics"""
     story_id = metadata.get("current_story")
     if not story_id:
         return
     
     story = metadata["stories"][story_id]
-    story["Generated Sttory"] = output_text
+    story["generated_story"] = output_text
     story["end_time"] = time.time()
     story["duration"] = story["end_time"] - story["start_time"]
     story["output_length"] = len(output_text)
     
-    # Calculate summary stats
-    total_time = sum(node["total_time"] for node in story["nodes"].values())
-    total_calls = sum(node["calls"] for node in story["nodes"].values())
+    # Enhanced summary metrics
+    story["summary"] = {
+        "execution": {
+            "total_duration": story["duration"],
+            "node_count": len(story["nodes"]),
+            "total_node_calls": sum(node["calls"] for node in story["nodes"].values())
+        },
+        "ai_usage": {
+            "llm_calls": len(story["llm_calls"]),
+            "total_tokens": story["total_tokens"],
+            "total_cost": story["total_cost"],
+            "image_calls": len(story.get("image_calls", [])),
+            "total_image_cost": sum(call["total_cost"] for call in story.get("image_calls", []))
+        },
+        "content": {
+            "input_length": len(story.get("input_fable", "")),
+            "output_length": len(output_text),
+            "word_count": len(output_text.split())
+        }
+    }
+# Create the folder and save the story
+    project_root = Path.cwd()
+    base_dir = project_root / "./generated_stories"
+    story_dir = base_dir / story_id
+    story_dir.mkdir(parents=True, exist_ok=True)
+
+    json_file_path = story_dir / "story_summary.json"
+    with open(json_file_path, "w") as f:
+        json.dump(story, f, indent=2, default=str)
+
+    # Log enhanced metrics
+    logger.info("=== ENHANCED STORY METRICS ===")
+    logger.info(f"Duration: {story['duration']:.2f}s | Tokens: {story['total_tokens']} | Cost: ${story['total_cost']:.4f}")
+    logger.info(f"Nodes: {len(story['nodes'])} | LLM calls: {len(story['llm_calls'])} | Words: {len(output_text.split())}")
     
-    logger.info("=== STORY METRICS ===")
-    logger.info(f"Total execution time: {story['duration']:.2f} seconds")
-    logger.info(f"Total tokens: {story['total_tokens']} tokens")
-    logger.info(f"Estimated cost: ${story['total_cost']:.4f}")
-    logger.info(f"Number of nodes executed: {len(story['nodes'])}")
-    logger.info(f"Number of LLM calls: {len(story['llm_calls'])}")
-    
-    # Reset current story
+    # Reset and export
     metadata["current_story"] = None
     metadata["total_time"] += story["duration"]
     
-    # Export metadata
-    with open(f"story_metrics_{story_id}.json", "w") as f:
-        json.dump(story, f, indent=2, default=str)
-    
-    logger.info(f"Metrics saved to story_metrics_{story_id}.json")
-    
+    logger.info(f"Enhanced metrics saved to {json_file_path}")
     return story
