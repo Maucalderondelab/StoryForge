@@ -92,8 +92,8 @@ def track_llm_call(node_name, tool_name, model, system_prompt, user_prompt, resp
     
     # Cost estimation with current pricing
     if model == "gpt-4.1-mini":
-        input_cost = (input_tokens / 1000) * 0.00015  # Current price
-        cached_cost = (cached_tokens / 1000) * 0.000075  # 50% discount
+        input_cost = (input_tokens / 1000) * 0.00015
+        cached_cost = (cached_tokens / 1000) * 0.000075
         output_cost = (output_tokens / 1000) * 0.0006
     elif model == "o1-mini":  # Fixed model name
         input_cost = (input_tokens / 1000) * 0.003
@@ -172,7 +172,7 @@ def track_image_generation(node_name, tool_name, model, prompt_text, num_images,
     story["total_cost"] += total_cost
     
     logger.info(f"Image generation in {node_name}: {num_images} images, ${total_cost:.4f}")
-def finish_story(output_text):
+def finish_story(output_text, image_prompts = None):
     """Finish tracking the current story with enhanced metrics"""
     story_id = metadata.get("current_story")
     if not story_id:
@@ -183,7 +183,14 @@ def finish_story(output_text):
     story["end_time"] = time.time()
     story["duration"] = story["end_time"] - story["start_time"]
     story["output_length"] = len(output_text)
-    
+
+    # Add image prompts if provided
+    if image_prompts:
+        story["image_prompts"] = {
+            "count": len(image_prompts),
+            "prompts": image_prompts,
+            "timestamp": datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }
     # Enhanced summary metrics
     story["summary"] = {
         "execution": {
@@ -201,7 +208,8 @@ def finish_story(output_text):
         "content": {
             "input_length": len(story.get("input_fable", "")),
             "output_length": len(output_text),
-            "word_count": len(output_text.split())
+            "word_count": len(output_text.split()),
+            "image_prompts_count": len(image_prompts) if image_prompts else 0  
         }
     }
 # Create the folder and save the story
@@ -218,7 +226,8 @@ def finish_story(output_text):
     logger.info("=== ENHANCED STORY METRICS ===")
     logger.info(f"Duration: {story['duration']:.2f}s | Tokens: {story['total_tokens']} | Cost: ${story['total_cost']:.4f}")
     logger.info(f"Nodes: {len(story['nodes'])} | LLM calls: {len(story['llm_calls'])} | Words: {len(output_text.split())}")
-    
+    if image_prompts:
+        logger.info(f"Image prompts: {len(image_prompts)}")
     # Reset and export
     metadata["current_story"] = None
     metadata["total_time"] += story["duration"]

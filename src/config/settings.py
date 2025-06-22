@@ -8,7 +8,7 @@ class MainState(TypedDict):
     processing_request: Dict        # Request info for the tool
     tool_output: Dict               # Output from selected tool
     final_story: str                # Final output after post-processing
-    image_prompts: List[Dict]       # List of image prompts for visualization
+    image_prompts: List[Dict]       # List of image prompts for visualization ← This line!
 
 # Cell 3: Define Aesop State (for subgraph)
 class AesopState(TypedDict):
@@ -16,3 +16,8 @@ class AesopState(TypedDict):
     analysis: Dict                  # Analysis of the fable (moral, characters, etc)
     brainstorm: Dict                # Ideas for the story creation/modification
     generated_story: str            # The final story created by this tool
+    human_approved: bool            # Human approval status  
+    feedback: str                   # Human feedback text
+    revision_request: str           # Specific revision instructions
+    revision_count: int             # Track number of revisions
+    image_prompts: List[Dict]       # Image prompts (moved from MainState)

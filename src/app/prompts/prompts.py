@@ -60,9 +60,9 @@ FORMAT_OUTPUT_PROMPT = """Format this modern Aesop fable for maximum impact on s
 Keep the entire output concise and visually scannable - perfect for a quick digital read."""
 
 # pRompt for image generation
-IMAGE_PROMPT_GENERATOR_PROMPT = """You are a master prompt engineer for AI image generation models like DALL-E 3, Midjourney and Stable Diffusion.
+IMAGE_PROMPT_GENERATOR_PROMPT = """You are a master prompt engineer for AI image generation models like DALL-E 3, Midjourney, Stable Diffusion and Imagen3.
 
-    Create 8-10 highly detailed, evocative image prompts for key moments in this fable. Each prompt should:
+    Create 8 and only 8 highly detailed, evocative image prompts for key moments in this fable. Each prompt should:
     
     1. Focus on a specific, emotionally resonant moment from the story
     2. Include rich character details (expressions, postures, actions)

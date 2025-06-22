@@ -18,4 +18,5 @@ dependencies = [
     "streamlit>=1.45.0", # Use latest version
     "google-genai>=1.18.0",
     "colorama>=0.4.6",
+    "pyppeteer>=0.0.25",
 ]
